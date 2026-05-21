@@ -1,4 +1,4 @@
-# Fraud Detection System
+﻿# Fraud Detection System
 
 Credit card fraud detection using a RandomForest classifier, Flask API, and SMOTE for class imbalance.
 
@@ -75,3 +75,4 @@ See `PUSH_CHECKLIST.md` in the project root.
 ## Deployment
 
 See `DEPLOYMENT.md` for Heroku.
+
