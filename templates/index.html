@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraud Detection System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.fraud {
+            background-color: #fee;
+            border: 2px solid #f56565;
+            color: #c53030;
+        }
+
+        .result.non-fraud {
+            background-color: #f0fff4;
+            border: 2px solid #48bb78;
+            color: #2f855a;
+        }
+
+        .result h3 {
+            margin-bottom: 10px;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+            transition: width 0.3s ease;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background-color: #fed7d7;
+            border: 2px solid #f56565;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .sample-data {
+            background-color: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .sample-data h4 {
+            margin-bottom: 10px;
+            color: #4a5568;
+        }
+
+        .sample-btn {
+            background-color: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .sample-btn:hover {
+            background-color: #5a67d8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Fraud Detection System</h1>
+            <p>Real-time credit card transaction fraud detection using Machine Learning</p>
+        </div>
+
+        <div class="content">
+            <div class="sample-data">
+                <h4>Sample Data</h4>
+                <button class="sample-btn" onclick="loadSampleData('non-fraud')">Load Non-Fraud Sample</button>
+                <button class="sample-btn" onclick="loadSampleData('fraud')">Load Fraud Sample</button>
+                <button class="sample-btn" onclick="clearForm()">Clear Form</button>
+            </div>
+
+            <form id="fraudForm">
+                <div class="features-grid">
+                    <div class="form-group">
+                        <label for="V1">V1</label>
+                        <input type="number" id="V1" name="V1" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V2">V2</label>
+                        <input type="number" id="V2" name="V2" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V3">V3</label>
+                        <input type="number" id="V3" name="V3" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V4">V4</label>
+                        <input type="number" id="V4" name="V4" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V5">V5</label>
+                        <input type="number" id="V5" name="V5" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V6">V6</label>
+                        <input type="number" id="V6" name="V6" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V7">V7</label>
+                        <input type="number" id="V7" name="V7" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V8">V8</label>
+                        <input type="number" id="V8" name="V8" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V9">V9</label>
+                        <input type="number" id="V9" name="V9" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V10">V10</label>
+                        <input type="number" id="V10" name="V10" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V11">V11</label>
+                        <input type="number" id="V11" name="V11" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V12">V12</label>
+                        <input type="number" id="V12" name="V12" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V13">V13</label>
+                        <input type="number" id="V13" name="V13" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V14">V14</label>
+                        <input type="number" id="V14" name="V14" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V15">V15</label>
+                        <input type="number" id="V15" name="V15" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V16">V16</label>
+                        <input type="number" id="V16" name="V16" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V17">V17</label>
+                        <input type="number" id="V17" name="V17" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V18">V18</label>
+                        <input type="number" id="V18" name="V18" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V19">V19</label>
+                        <input type="number" id="V19" name="V19" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V20">V20</label>
+                        <input type="number" id="V20" name="V20" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V21">V21</label>
+                        <input type="number" id="V21" name="V21" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V22">V22</label>
+                        <input type="number" id="V22" name="V22" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V23">V23</label>
+                        <input type="number" id="V23" name="V23" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V24">V24</label>
+                        <input type="number" id="V24" name="V24" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V25">V25</label>
+                        <input type="number" id="V25" name="V25" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V26">V26</label>
+                        <input type="number" id="V26" name="V26" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V27">V27</label>
+                        <input type="number" id="V27" name="V27" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="V28">V28</label>
+                        <input type="number" id="V28" name="V28" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="Amount">Amount</label>
+                        <input type="number" id="Amount" name="Amount" step="any" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" id="submitBtn">
+                    Detect Fraud
+                </button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing transaction...</p>
+            </div>
+
+            <div class="result" id="result">
+                <h3 id="resultTitle"></h3>
+                <p id="resultText"></p>
+                <div class="confidence-bar">
+                    <div class="confidence-fill" id="confidenceFill"></div>
+                </div>
+                <p id="confidenceText"></p>
+            </div>
+
+            <div class="error" id="error">
+                <strong>Error:</strong> <span id="errorText"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sampleData = {
+            'non-fraud': {
+                V1: -1.3598071336738,
+                V2: -0.0727811733098497,
+                V3: 2.53634673796914,
+                V4: 1.37815522427443,
+                V5: -0.338320769942518,
+                V6: 0.462387777762292,
+                V7: 0.239598554061257,
+                V8: 0.0986979012610507,
+                V9: 0.363786969611213,
+                V10: 0.0907941719789316,
+                V11: -0.551599533260813,
+                V12: -0.617800855762348,
+                V13: -0.991389847235408,
+                V14: -0.311169353699879,
+                V15: 1.46817697209427,
+                V16: -0.470400525259478,
+                V17: 0.207971241929242,
+                V18: 0.0257905801985591,
+                V19: 0.403992960255733,
+                V20: 0.251412098239705,
+                V21: -0.018306777944153,
+                V22: 0.277837575558899,
+                V23: -0.110473910188767,
+                V24: 0.0669280749146731,
+                V25: 0.128539358273528,
+                V26: -0.189114843888824,
+                V27: 0.133558376740387,
+                V28: -0.0210530534538215,
+                Amount: 149.62
+            },
+            'fraud': {
+                V1: -2.3122265423263,
+                V2: 1.95199201064158,
+                V3: -1.60985073229769,
+                V4: 3.9979055875468,
+                V5: -0.522187864667764,
+                V6: -1.42654531920595,
+                V7: -2.5371533064697,
+                V8: 1.39165724829804,
+                V9: -2.77008927719433,
+                V10: -2.77227214465915,
+                V11: 3.20203320709635,
+                V12: -2.89990738849473,
+                V13: -0.595221881724605,
+                V14: -4.28925378244217,
+                V15: 0.389724120274487,
+                V16: -1.14074717980657,
+                V17: -2.83005567450437,
+                V18: -0.0168224681808257,
+                V19: 0.416955705037907,
+                V20: 0.126910559061474,
+                V21: 0.517232370861764,
+                V22: -0.0350493686052974,
+                V23: -0.465211076182388,
+                V24: 0.320198198514258,
+                V25: 0.0445191674731724,
+                V26: 0.177839798284401,
+                V27: 0.261145002567677,
+                V28: -0.143275874698919,
+                Amount: 2125.87
+            }
+        };
+
+        function loadSampleData(type) {
+            const data = sampleData[type];
+            for (const [key, value] of Object.entries(data)) {
+                document.getElementById(key).value = value;
+            }
+        }
+
+        function clearForm() {
+            document.getElementById('fraudForm').reset();
+            hideResults();
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('submitBtn').disabled = true;
+            hideResults();
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        function showResult(data) {
+            const resultDiv = document.getElementById('result');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultText = document.getElementById('resultText');
+            const confidenceFill = document.getElementById('confidenceFill');
+            const confidenceText = document.getElementById('confidenceText');
+
+            if (data.fraud_detected) {
+                resultDiv.className = 'result fraud';
+                resultTitle.textContent = 'FRAUD DETECTED!';
+                resultText.textContent = 'This transaction has been flagged as potentially fraudulent.';
+            } else {
+                resultDiv.className = 'result non-fraud';
+                resultTitle.textContent = 'LEGITIMATE TRANSACTION';
+                resultText.textContent = 'This transaction appears to be legitimate.';
+            }
+
+            const confidence = Math.round(data.confidence * 100);
+            confidenceFill.style.width = confidence + '%';
+            confidenceText.textContent = `Confidence: ${confidence}%`;
+
+            resultDiv.style.display = 'block';
+        }
+
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('error').style.display = 'block';
+        }
+
+        function hideResults() {
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+        }
+
+        document.getElementById('fraudForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            showLoading();
+            
+            const formData = new FormData(this);
+            const data = {};
+            
+            for (const [key, value] of formData.entries()) {
+                data[key] = parseFloat(value);
+            }
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showResult(result);
+                } else {
+                    showError(result.error || 'An error occurred while processing the request.');
+                }
+            } catch (error) {
+                showError('Network error: Unable to connect to the server.');
+            } finally {
+                hideLoading();
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Environment and secrets
+.env
+.env.*
+*.pem
+*.key
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs and local runtime artifacts
+*.log
+*.err.log
+*.out.log
+data/audit/
+
+# Large data files (exceed GitHub 100 MB limit)
+data/raw/*.csv
+data/processed/*.csv
+
+# Optional: keep directory structure
+!data/raw/.gitkeep
+!data/raw/README.md
+!data/processed/.gitkeep
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
